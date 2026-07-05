@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-page: #0c0d10;
+  --bg-app: #121316;
+  --bg-card: #1c1e23;
+  --bg-input: #121316;
+  --bg-nav: #16171b;
+  --text: #f5f6f7;
+  --text-30: rgba(245, 246, 247, 0.3);
+  --text-40: rgba(245, 246, 247, 0.4);
+  --text-45: rgba(245, 246, 247, 0.45);
+  --text-50: rgba(245, 246, 247, 0.5);
+  --text-55: rgba(245, 246, 247, 0.55);
+  --text-60: rgba(245, 246, 247, 0.6);
+  --border: rgba(255, 255, 255, 0.07);
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --border-input: rgba(255, 255, 255, 0.08);
+  --accent: #c6ff6b;
+  --accent-dim: rgba(198, 255, 107, 0.35);
+  --protein: #ff7a6b;
+  --carbs: #ffc24b;
+  --fat: #6bb8ff;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-page);
+  font-family: Manrope, system-ui, sans-serif;
+  color: var(--text);
+}
+
+button {
+  font-family: inherit;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
