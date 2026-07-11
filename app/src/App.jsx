@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import { loadState, saveState } from './lib/storage';
-import { initialState } from './lib/seed';
+import { initialState, DAYS } from './lib/seed';
 import { todayDateStr, fullDateLabel, dayOfWeekKey } from './lib/calc';
 import TodayScreen from './components/TodayScreen';
 import LogFoodScreen from './components/LogFoodScreen';
@@ -38,6 +38,7 @@ function App() {
   const [planQuery, setPlanQuery] = useState('');
   const [planExpandedFoodId, setPlanExpandedFoodId] = useState(null);
   const [planQtyDrafts, setPlanQtyDrafts] = useState({});
+  const [planAddDays, setPlanAddDays] = useState([todayDayKey]);
 
   function goHome() { setScreen('home'); }
   function goLogFood() { setExpandedFoodId(null); setLogQuery(''); setScreen('logFood'); }
@@ -46,10 +47,12 @@ function App() {
   function goGoals() { setGoalsDraft({ ...data.goals }); setScreen('goals'); }
   function goAddFood() { setScreen('addFood'); }
   function goMealPlan(day, meal) {
-    setPlanDay(day ?? todayDayKey);
+    const resolvedDay = day ?? todayDayKey;
+    setPlanDay(resolvedDay);
     setPlanMeal(meal ?? 'breakfast');
     setPlanQuery('');
     setPlanExpandedFoodId(null);
+    setPlanAddDays([resolvedDay]);
     setScreen('mealPlan');
   }
 
@@ -87,6 +90,22 @@ function App() {
     setData((s) => ({ ...s, log: s.log.filter((e) => e.id !== id) }));
   }
 
+  function selectPlanDay(day) {
+    setPlanDay(day);
+    setPlanAddDays([day]);
+  }
+
+  function togglePlanAddDay(day) {
+    setPlanAddDays((prev) => {
+      if (prev.includes(day)) return prev.length > 1 ? prev.filter((d) => d !== day) : prev;
+      return [...prev, day];
+    });
+  }
+
+  function toggleAllPlanAddDays() {
+    setPlanAddDays((prev) => (prev.length === DAYS.length ? [planDay] : [...DAYS]));
+  }
+
   function togglePlanExpand(foodId) {
     setPlanExpandedFoodId((prev) => (prev === foodId ? null : foodId));
     setPlanQtyDrafts((prev) => (
@@ -102,13 +121,14 @@ function App() {
     const qty = parseFloat(planQtyDrafts[foodId]);
     if (!qty || qty <= 0) return;
     setData((s) => {
-      const dayPlan = s.mealPlan[planDay];
-      const mealEntries = [...dayPlan[planMeal], { id: s.nextPlanId, foodId, qty }];
-      return {
-        ...s,
-        mealPlan: { ...s.mealPlan, [planDay]: { ...dayPlan, [planMeal]: mealEntries } },
-        nextPlanId: s.nextPlanId + 1,
-      };
+      let nextPlanId = s.nextPlanId;
+      const mealPlan = { ...s.mealPlan };
+      planAddDays.forEach((day) => {
+        const dayPlan = mealPlan[day];
+        mealPlan[day] = { ...dayPlan, [planMeal]: [...dayPlan[planMeal], { id: nextPlanId, foodId, qty }] };
+        nextPlanId += 1;
+      });
+      return { ...s, mealPlan, nextPlanId };
     });
     setPlanExpandedFoodId(null);
   }
@@ -242,7 +262,7 @@ function App() {
           mealPlan={data.mealPlan}
           todayDayKey={todayDayKey}
           planDay={planDay}
-          onSelectDay={setPlanDay}
+          onSelectDay={selectPlanDay}
           planMeal={planMeal}
           onSelectMeal={setPlanMeal}
           planQuery={planQuery}
@@ -253,6 +273,9 @@ function App() {
           onQtyChange={setPlanQtyDraft}
           onAdd={confirmAddPlan}
           onRemoveEntry={removePlanEntry}
+          planAddDays={planAddDays}
+          onTogglePlanAddDay={togglePlanAddDay}
+          onToggleAllPlanAddDays={toggleAllPlanAddDays}
         />
       )}
 

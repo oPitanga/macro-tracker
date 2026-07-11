@@ -8,6 +8,7 @@ export default function MealPlanScreen({
   expandedFoodId, onToggleExpand,
   qtyDrafts, onQtyChange,
   onAdd, onRemoveEntry,
+  planAddDays, onTogglePlanAddDay, onToggleAllPlanAddDays,
 }) {
   const q = planQuery.trim().toLowerCase();
   const filtered = foods.filter((f) => f.name.toLowerCase().includes(q));
@@ -97,6 +98,37 @@ export default function MealPlanScreen({
 
         <div>
           <div style={{ font: "700 15px 'Space Grotesk'", marginBottom: 8 }}>Add from library</div>
+
+          <div style={{ font: '600 12px Manrope', color: 'var(--text-45)', marginBottom: 6 }}>Add to</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+            <button
+              onClick={onToggleAllPlanAddDays}
+              style={{
+                flex: '0 0 auto', padding: '7px 10px', borderRadius: 10,
+                border: '1px solid var(--border-input)',
+                background: planAddDays.length === DAYS.length ? 'var(--accent)' : 'var(--bg-card)',
+                color: planAddDays.length === DAYS.length ? '#121316' : 'var(--text-60)',
+                font: '700 12px Manrope', cursor: 'pointer',
+              }}
+            >Every day</button>
+            {DAYS.map((day) => {
+              const active = planAddDays.includes(day);
+              return (
+                <button
+                  key={day}
+                  onClick={() => onTogglePlanAddDay(day)}
+                  style={{
+                    flex: '0 0 auto', padding: '7px 10px', borderRadius: 10,
+                    border: '1px solid var(--border-input)',
+                    background: active ? 'var(--accent)' : 'var(--bg-card)',
+                    color: active ? '#121316' : 'var(--text-60)',
+                    font: '700 12px Manrope', cursor: 'pointer',
+                  }}
+                >{DAY_SHORT_LABELS[day]}</button>
+              );
+            })}
+          </div>
+
           <input
             type="text"
             value={planQuery}
@@ -135,7 +167,7 @@ export default function MealPlanScreen({
                       <button
                         onClick={() => onAdd(f.id)}
                         style={{ padding: '9px 16px', borderRadius: 10, border: 'none', background: 'var(--accent)', color: '#121316', font: '700 13px Manrope', cursor: 'pointer' }}
-                      >Add</button>
+                      >{planAddDays.length > 1 ? `Add to ${planAddDays.length} days` : 'Add'}</button>
                     </div>
                   )}
                 </div>
