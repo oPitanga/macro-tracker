@@ -9,6 +9,7 @@ export default function MealPlanScreen({
   qtyDrafts, onQtyChange,
   onAdd, onRemoveEntry,
   planAddDays, onTogglePlanAddDay, onToggleAllPlanAddDays,
+  planChanged, onSavePlan, onRequestClearPlan,
 }) {
   const q = planQuery.trim().toLowerCase();
   const filtered = foods.filter((f) => f.name.toLowerCase().includes(q));
@@ -59,6 +60,15 @@ export default function MealPlanScreen({
             >{MEAL_LABELS[meal]}</button>
           );
         })}
+      </div>
+
+      <div style={{ padding: '0 16px 10px', flexShrink: 0 }}>
+        <button
+          onClick={onSavePlan}
+          disabled={!planChanged}
+          className="btn-primary"
+          style={{ width: '100%', background: planChanged ? 'var(--accent)' : 'var(--accent-dim)' }}
+        >{planChanged ? 'Save Plan' : 'Saved'}</button>
       </div>
 
       <div className="screen-scroll" style={{ padding: '0 16px 110px', display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -174,6 +184,11 @@ export default function MealPlanScreen({
               );
             })}
           </div>
+        </div>
+
+        <div style={{ marginTop: 4, paddingTop: 18, borderTop: '1px solid var(--border-input)' }}>
+          <div className="field-label" style={{ marginBottom: 8 }}>DANGER ZONE</div>
+          <button onClick={onRequestClearPlan} className="btn-danger">Clear All Plans</button>
         </div>
       </div>
     </div>

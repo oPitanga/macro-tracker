@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import { loadState, saveState } from './lib/storage';
-import { initialState, DAYS } from './lib/seed';
+import { initialState, DAYS, emptyMealPlan } from './lib/seed';
 import { todayDateStr, fullDateLabel, dayOfWeekKey } from './lib/calc';
 import TodayScreen from './components/TodayScreen';
 import LogFoodScreen from './components/LogFoodScreen';
@@ -39,6 +39,9 @@ function App() {
   const [planExpandedFoodId, setPlanExpandedFoodId] = useState(null);
   const [planQtyDrafts, setPlanQtyDrafts] = useState({});
   const [planAddDays, setPlanAddDays] = useState([todayDayKey]);
+  const [mealPlanDraft, setMealPlanDraft] = useState(data.mealPlan);
+  const [planDraftNextId, setPlanDraftNextId] = useState(data.nextPlanId);
+  const [confirmClearPlan, setConfirmClearPlan] = useState(false);
 
   function goHome() { setScreen('home'); }
   function goLogFood() { setExpandedFoodId(null); setLogQuery(''); setScreen('logFood'); }
@@ -53,6 +56,8 @@ function App() {
     setPlanQuery('');
     setPlanExpandedFoodId(null);
     setPlanAddDays([resolvedDay]);
+    setMealPlanDraft(data.mealPlan);
+    setPlanDraftNextId(data.nextPlanId);
     setScreen('mealPlan');
   }
 
@@ -120,27 +125,36 @@ function App() {
   function confirmAddPlan(foodId) {
     const qty = parseFloat(planQtyDrafts[foodId]);
     if (!qty || qty <= 0) return;
-    setData((s) => {
-      let nextPlanId = s.nextPlanId;
-      const mealPlan = { ...s.mealPlan };
+    let nextId = planDraftNextId;
+    setMealPlanDraft((prev) => {
+      const mealPlan = { ...prev };
       planAddDays.forEach((day) => {
         const dayPlan = mealPlan[day];
-        mealPlan[day] = { ...dayPlan, [planMeal]: [...dayPlan[planMeal], { id: nextPlanId, foodId, qty }] };
-        nextPlanId += 1;
+        mealPlan[day] = { ...dayPlan, [planMeal]: [...dayPlan[planMeal], { id: nextId, foodId, qty }] };
+        nextId += 1;
       });
-      return { ...s, mealPlan, nextPlanId };
+      return mealPlan;
     });
+    setPlanDraftNextId(nextId);
     setPlanExpandedFoodId(null);
   }
 
   function removePlanEntry(id) {
-    setData((s) => {
-      const dayPlan = s.mealPlan[planDay];
-      return {
-        ...s,
-        mealPlan: { ...s.mealPlan, [planDay]: { ...dayPlan, [planMeal]: dayPlan[planMeal].filter((e) => e.id !== id) } },
-      };
+    setMealPlanDraft((prev) => {
+      const dayPlan = prev[planDay];
+      return { ...prev, [planDay]: { ...dayPlan, [planMeal]: dayPlan[planMeal].filter((e) => e.id !== id) } };
     });
+  }
+
+  function savePlan() {
+    setData((s) => ({ ...s, mealPlan: mealPlanDraft, nextPlanId: planDraftNextId }));
+  }
+
+  function requestClearPlan() { setConfirmClearPlan(true); }
+  function cancelClearPlan() { setConfirmClearPlan(false); }
+  function clearPlanConfirmed() {
+    setMealPlanDraft(emptyMealPlan());
+    setConfirmClearPlan(false);
   }
 
   function updateNewFood(key, value) {
@@ -187,6 +201,7 @@ function App() {
   }
 
   const hasPastHistory = data.log.some((e) => e.date !== todayStr);
+  const planChanged = JSON.stringify(data.mealPlan) !== JSON.stringify(mealPlanDraft);
 
   return (
     <div className="app-shell">
@@ -259,7 +274,7 @@ function App() {
       {screen === 'mealPlan' && (
         <MealPlanScreen
           foods={data.foods}
-          mealPlan={data.mealPlan}
+          mealPlan={mealPlanDraft}
           todayDayKey={todayDayKey}
           planDay={planDay}
           onSelectDay={selectPlanDay}
@@ -276,6 +291,9 @@ function App() {
           planAddDays={planAddDays}
           onTogglePlanAddDay={togglePlanAddDay}
           onToggleAllPlanAddDays={toggleAllPlanAddDays}
+          planChanged={planChanged}
+          onSavePlan={savePlan}
+          onRequestClearPlan={requestClearPlan}
         />
       )}
 
@@ -283,6 +301,15 @@ function App() {
 
       {confirmDeleteHistory && (
         <DeleteConfirmModal onCancel={cancelDeleteHistory} onConfirm={deleteHistoryConfirmed} />
+      )}
+      {confirmClearPlan && (
+        <DeleteConfirmModal
+          onCancel={cancelClearPlan}
+          onConfirm={clearPlanConfirmed}
+          title="Clear all meal plans?"
+          body="This clears every planned meal for every day of the week. Save is still required to make it permanent."
+          confirmLabel="Clear all"
+        />
       )}
     </div>
   );
