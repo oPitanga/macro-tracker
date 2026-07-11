@@ -9,6 +9,32 @@ export const MEAL_LABELS = {
   dinner: 'Dinner',
 };
 
+export const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+export const DAY_LABELS = {
+  mon: 'Monday',
+  tue: 'Tuesday',
+  wed: 'Wednesday',
+  thu: 'Thursday',
+  fri: 'Friday',
+  sat: 'Saturday',
+  sun: 'Sunday',
+};
+
+export const DAY_SHORT_LABELS = {
+  mon: 'Mon',
+  tue: 'Tue',
+  wed: 'Wed',
+  thu: 'Thu',
+  fri: 'Fri',
+  sat: 'Sat',
+  sun: 'Sun',
+};
+
+export function emptyMealPlan() {
+  return Object.fromEntries(DAYS.map((d) => [d, { breakfast: [], lunch: [], snacks: [], dinner: [] }]));
+}
+
 export const DEFAULT_FOODS = [
   { id: 1, name: 'Chicken Breast', servingSize: 100, servingUnit: 'g', calories: 165, protein: 31, carbs: 0, fat: 3.6 },
   { id: 2, name: 'Brown Rice', servingSize: 100, servingUnit: 'g', calories: 112, protein: 2.6, carbs: 23.5, fat: 0.9 },
@@ -30,5 +56,7 @@ export function initialState() {
     nextLogId: 1,
     log: [],
     starredByMeal: { breakfast: [], lunch: [], dinner: [], snacks: [] },
+    mealPlan: emptyMealPlan(),
+    nextPlanId: 1,
   };
 }

@@ -11,7 +11,7 @@ export default function LibraryScreen({ foods, libQuery, onLibQueryChange, onDel
       <div style={{ padding: '0 20px 12px', flexShrink: 0 }}>
         <input type="text" value={libQuery} onChange={(e) => onLibQueryChange(e.target.value)} placeholder="Search foods…" className="text-input" />
       </div>
-      <div className="screen-scroll" style={{ padding: '0 20px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="screen-scroll" style={{ padding: '0 20px 110px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {filtered.map((f) => (
           <div key={f.id} className="card-16" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ flex: 1, minWidth: 0 }}>

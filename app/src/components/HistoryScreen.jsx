@@ -50,7 +50,7 @@ export default function HistoryScreen({ log, foods, goals, todayStr }) {
         <div className="page-title">History</div>
         <div className="page-subtitle">Last 7 days vs your goal</div>
       </div>
-      <div className="screen-scroll" style={{ padding: '16px 20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="screen-scroll" style={{ padding: '16px 20px 110px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <BarChartCard days={calorieDays} height={140} legend />
         <BarChartCard title="Protein" titleColor="var(--protein)" days={proteinDays} height={100} />
         <BarChartCard title="Carbs" titleColor="var(--carbs)" days={carbsDays} height={100} />

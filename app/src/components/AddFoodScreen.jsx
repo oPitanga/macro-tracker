@@ -7,7 +7,7 @@ export default function AddFoodScreen({ newFood, onChange, onSave, onBack }) {
         <button className="icon-btn" onClick={onBack}>←</button>
         <div className="back-title">New Food</div>
       </div>
-      <div className="screen-scroll" style={{ padding: '12px 20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div className="screen-scroll" style={{ padding: '12px 20px 110px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
           <div className="field-label">NAME</div>
           <input

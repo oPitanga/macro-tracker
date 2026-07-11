@@ -1,5 +1,13 @@
+import { DAYS } from './seed';
+
 export function round1(n) {
   return Math.round(n * 10) / 10;
+}
+
+/** Maps a date string to its weekday key ('mon'..'sun'), Monday-first. */
+export function dayOfWeekKey(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return DAYS[(d.getDay() + 6) % 7];
 }
 
 export function todayDateStr(d = new Date()) {
@@ -35,6 +43,17 @@ export function entryMacros(entry, foods) {
     fat: round1(food.fat * mult),
     qtyLabel: `${entry.qty}${food.servingUnit}`,
   };
+}
+
+/** Sums macros for every food planned on a given weekday + meal. */
+export function planMealMacros(day, meal, mealPlan, foods) {
+  const entries = mealPlan[day]?.[meal] || [];
+  let cal = 0, protein = 0, carbs = 0, fat = 0;
+  entries.forEach((e) => {
+    const m = entryMacros(e, foods);
+    cal += m.cal; protein += m.protein; carbs += m.carbs; fat += m.fat;
+  });
+  return { cal: Math.round(cal), protein: round1(protein), carbs: round1(carbs), fat: round1(fat) };
 }
 
 export function lastNDates(n, todayStr) {

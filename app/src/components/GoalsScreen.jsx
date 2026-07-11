@@ -7,7 +7,7 @@ export default function GoalsScreen({ goals, goalsDraft, onDraftChange, onSave, 
         <div className="page-title">Daily Goals</div>
         <div className="page-subtitle">Used to track your progress each day</div>
       </div>
-      <div className="screen-scroll" style={{ padding: '12px 20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div className="screen-scroll" style={{ padding: '12px 20px 110px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
           <div className="field-label" style={{ color: 'var(--accent)' }}>CALORIES (KCAL)</div>
           <input type="number" value={goalsDraft.calories} onChange={(e) => onDraftChange('calories', e.target.value)} className="text-input text-input--goal" />

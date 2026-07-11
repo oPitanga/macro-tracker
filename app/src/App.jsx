@@ -2,24 +2,26 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { loadState, saveState } from './lib/storage';
 import { initialState } from './lib/seed';
-import { todayDateStr, fullDateLabel } from './lib/calc';
+import { todayDateStr, fullDateLabel, dayOfWeekKey } from './lib/calc';
 import TodayScreen from './components/TodayScreen';
 import LogFoodScreen from './components/LogFoodScreen';
 import LibraryScreen from './components/LibraryScreen';
 import AddFoodScreen from './components/AddFoodScreen';
 import GoalsScreen from './components/GoalsScreen';
 import HistoryScreen from './components/HistoryScreen';
+import MealPlanScreen from './components/MealPlanScreen';
 import BottomNav from './components/BottomNav';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
 
 const EMPTY_NEW_FOOD = { name: '', servingSize: 100, servingUnit: 'g', calories: '', protein: '', carbs: '', fat: '' };
 
 function App() {
-  const [data, setData] = useState(() => loadState() ?? initialState());
+  const [data, setData] = useState(() => ({ ...initialState(), ...(loadState() ?? {}) }));
   useEffect(() => { saveState(data); }, [data]);
 
   const todayStr = todayDateStr();
   const todayLabel = fullDateLabel();
+  const todayDayKey = dayOfWeekKey(todayStr);
 
   const [screen, setScreen] = useState('home');
   const [logQuery, setLogQuery] = useState('');
@@ -31,12 +33,25 @@ function App() {
   const [goalsDraft, setGoalsDraft] = useState(data.goals);
   const [confirmDeleteHistory, setConfirmDeleteHistory] = useState(false);
 
+  const [planDay, setPlanDay] = useState(todayDayKey);
+  const [planMeal, setPlanMeal] = useState('breakfast');
+  const [planQuery, setPlanQuery] = useState('');
+  const [planExpandedFoodId, setPlanExpandedFoodId] = useState(null);
+  const [planQtyDrafts, setPlanQtyDrafts] = useState({});
+
   function goHome() { setScreen('home'); }
   function goLogFood() { setExpandedFoodId(null); setLogQuery(''); setScreen('logFood'); }
   function goLibrary() { setLibQuery(''); setScreen('library'); }
   function goHistory() { setScreen('history'); }
   function goGoals() { setGoalsDraft({ ...data.goals }); setScreen('goals'); }
   function goAddFood() { setScreen('addFood'); }
+  function goMealPlan(day, meal) {
+    setPlanDay(day ?? todayDayKey);
+    setPlanMeal(meal ?? 'breakfast');
+    setPlanQuery('');
+    setPlanExpandedFoodId(null);
+    setScreen('mealPlan');
+  }
 
   function toggleStar(meal, foodId) {
     setData((s) => {
@@ -70,6 +85,42 @@ function App() {
 
   function removeLogEntry(id) {
     setData((s) => ({ ...s, log: s.log.filter((e) => e.id !== id) }));
+  }
+
+  function togglePlanExpand(foodId) {
+    setPlanExpandedFoodId((prev) => (prev === foodId ? null : foodId));
+    setPlanQtyDrafts((prev) => (
+      prev[foodId] !== undefined ? prev : { ...prev, [foodId]: String(data.foods.find((f) => f.id === foodId).servingSize) }
+    ));
+  }
+
+  function setPlanQtyDraft(foodId, val) {
+    setPlanQtyDrafts((prev) => ({ ...prev, [foodId]: val }));
+  }
+
+  function confirmAddPlan(foodId) {
+    const qty = parseFloat(planQtyDrafts[foodId]);
+    if (!qty || qty <= 0) return;
+    setData((s) => {
+      const dayPlan = s.mealPlan[planDay];
+      const mealEntries = [...dayPlan[planMeal], { id: s.nextPlanId, foodId, qty }];
+      return {
+        ...s,
+        mealPlan: { ...s.mealPlan, [planDay]: { ...dayPlan, [planMeal]: mealEntries } },
+        nextPlanId: s.nextPlanId + 1,
+      };
+    });
+    setPlanExpandedFoodId(null);
+  }
+
+  function removePlanEntry(id) {
+    setData((s) => {
+      const dayPlan = s.mealPlan[planDay];
+      return {
+        ...s,
+        mealPlan: { ...s.mealPlan, [planDay]: { ...dayPlan, [planMeal]: dayPlan[planMeal].filter((e) => e.id !== id) } },
+      };
+    });
   }
 
   function updateNewFood(key, value) {
@@ -126,8 +177,11 @@ function App() {
           log={data.log}
           foods={data.foods}
           todayStr={todayStr}
+          mealPlan={data.mealPlan}
+          todayDayKey={todayDayKey}
           onRemoveEntry={removeLogEntry}
           onLogFood={goLogFood}
+          onEditPlan={goMealPlan}
         />
       )}
       {screen === 'logFood' && (
@@ -182,8 +236,27 @@ function App() {
           todayStr={todayStr}
         />
       )}
+      {screen === 'mealPlan' && (
+        <MealPlanScreen
+          foods={data.foods}
+          mealPlan={data.mealPlan}
+          todayDayKey={todayDayKey}
+          planDay={planDay}
+          onSelectDay={setPlanDay}
+          planMeal={planMeal}
+          onSelectMeal={setPlanMeal}
+          planQuery={planQuery}
+          onPlanQueryChange={setPlanQuery}
+          expandedFoodId={planExpandedFoodId}
+          onToggleExpand={togglePlanExpand}
+          qtyDrafts={planQtyDrafts}
+          onQtyChange={setPlanQtyDraft}
+          onAdd={confirmAddPlan}
+          onRemoveEntry={removePlanEntry}
+        />
+      )}
 
-      <BottomNav screen={screen} goHome={goHome} goLibrary={goLibrary} goHistory={goHistory} goGoals={goGoals} />
+      <BottomNav screen={screen} goHome={goHome} goLibrary={goLibrary} goHistory={goHistory} goGoals={goGoals} goMealPlan={() => goMealPlan()} />
 
       {confirmDeleteHistory && (
         <DeleteConfirmModal onCancel={cancelDeleteHistory} onConfirm={deleteHistoryConfirmed} />

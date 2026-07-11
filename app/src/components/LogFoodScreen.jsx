@@ -49,7 +49,7 @@ export default function LogFoodScreen({
         />
       </div>
 
-      <div className="screen-scroll" style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="screen-scroll" style={{ padding: '0 16px 110px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {filtered.map((f) => {
           const expanded = expandedFoodId === f.id;
           const starred = isStarred(f.id);

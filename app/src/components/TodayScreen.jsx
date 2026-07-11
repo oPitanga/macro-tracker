@@ -1,5 +1,14 @@
-import { entryMacros, pct, round1 } from '../lib/calc';
+import { entryMacros, planMealMacros, pct, round1 } from '../lib/calc';
 import { MEAL_TYPES, MEAL_LABELS } from '../lib/seed';
+
+function MacroCompare({ label, color, consumed, planned }) {
+  return (
+    <div style={{ font: '500 12px Manrope', color: 'var(--text-50)' }}>
+      {label} <span style={{ color, fontWeight: 700 }}>{consumed}g</span>
+      <span style={{ color: 'var(--text-30)' }}> / {planned}g</span>
+    </div>
+  );
+}
 
 function MacroTile({ label, color, consumed, goal, pctVal }) {
   return (
@@ -16,7 +25,7 @@ function MacroTile({ label, color, consumed, goal, pctVal }) {
   );
 }
 
-export default function TodayScreen({ todayLabel, goals, log, foods, todayStr, onRemoveEntry, onLogFood }) {
+export default function TodayScreen({ todayLabel, goals, log, foods, todayStr, mealPlan, todayDayKey, onRemoveEntry, onLogFood, onEditPlan }) {
   const todayEntries = log.filter((e) => e.date === todayStr);
 
   let calConsumed = 0, proteinConsumed = 0, carbsConsumed = 0, fatConsumed = 0;
@@ -36,8 +45,14 @@ export default function TodayScreen({ todayLabel, goals, log, foods, todayStr, o
     const entries = todayEntries
       .filter((e) => e.meal === meal)
       .map((e) => ({ ...entryMacros(e, foods), id: e.id }));
-    const totalCal = entries.reduce((a, e) => a + e.cal, 0);
-    return { meal, label: MEAL_LABELS[meal], entries, totalCal };
+    const consumed = entries.reduce((a, e) => ({
+      cal: a.cal + e.cal, protein: a.protein + e.protein, carbs: a.carbs + e.carbs, fat: a.fat + e.fat,
+    }), { cal: 0, protein: 0, carbs: 0, fat: 0 });
+    consumed.protein = round1(consumed.protein);
+    consumed.carbs = round1(consumed.carbs);
+    consumed.fat = round1(consumed.fat);
+    const planned = planMealMacros(todayDayKey, meal, mealPlan, foods);
+    return { meal, label: MEAL_LABELS[meal], entries, consumed, planned };
   });
 
   return (
@@ -47,7 +62,7 @@ export default function TodayScreen({ todayLabel, goals, log, foods, todayStr, o
         <div className="page-title">Today</div>
       </div>
 
-      <div className="screen-scroll" style={{ padding: '16px 20px 100px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="screen-scroll" style={{ padding: '16px 20px 130px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
             <div>
@@ -72,10 +87,25 @@ export default function TodayScreen({ todayLabel, goals, log, foods, todayStr, o
 
         {mealGroups.map((mg) => (
           <div key={mg.meal}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <div style={{ font: "700 15px 'Space Grotesk'" }}>{mg.label}</div>
-              <div style={{ font: '600 13px Manrope', color: 'var(--text-45)' }}>{mg.totalCal} kcal</div>
+              <button
+                onClick={() => onEditPlan(todayDayKey, mg.meal)}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: '600 12px Manrope', color: 'var(--text-40)' }}
+              >Edit plan</button>
             </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ font: '600 13px Manrope', color: 'var(--text-45)' }}>
+                {mg.consumed.cal}<span style={{ color: 'var(--text-30)' }}> / {mg.planned.cal} kcal planned</span>
+              </div>
+            </div>
+            {mg.planned.cal > 0 && (
+              <div style={{ display: 'flex', gap: 14, marginBottom: 10 }}>
+                <MacroCompare label="P" color="var(--protein)" consumed={mg.consumed.protein} planned={mg.planned.protein} />
+                <MacroCompare label="C" color="var(--carbs)" consumed={mg.consumed.carbs} planned={mg.planned.carbs} />
+                <MacroCompare label="F" color="var(--fat)" consumed={mg.consumed.fat} planned={mg.planned.fat} />
+              </div>
+            )}
             {mg.entries.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 4 }}>
                 {mg.entries.map((e) => (
