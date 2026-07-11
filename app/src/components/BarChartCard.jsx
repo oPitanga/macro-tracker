@@ -1,6 +1,6 @@
-export default function BarChartCard({ title, titleColor, days, height, legend }) {
-  return (
-    <div className="card" style={{ padding: legend ? '18px 16px 14px' : '16px 16px 12px' }}>
+export default function BarChartCard({ title, titleColor, days, height, legend, bare }) {
+  const content = (
+    <>
       {title && (
         <div style={{ font: '700 12px Manrope', color: titleColor, letterSpacing: '.04em', textTransform: 'uppercase', marginBottom: 10 }}>{title}</div>
       )}
@@ -21,6 +21,14 @@ export default function BarChartCard({ title, titleColor, days, height, legend }
           <div style={{ font: '500 12px Manrope', color: 'var(--text-50)' }}>off target</div>
         </div>
       )}
+    </>
+  );
+
+  if (bare) return content;
+
+  return (
+    <div className="card" style={{ padding: legend ? '18px 16px 14px' : '16px 16px 12px' }}>
+      {content}
     </div>
   );
 }

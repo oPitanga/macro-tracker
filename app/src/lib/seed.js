@@ -58,5 +58,6 @@ export function initialState() {
     starredByMeal: { breakfast: [], lunch: [], dinner: [], snacks: [] },
     mealPlan: emptyMealPlan(),
     nextPlanId: 1,
+    bodyLog: [],
   };
 }

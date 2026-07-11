@@ -95,6 +95,25 @@ function App() {
     setData((s) => ({ ...s, log: s.log.filter((e) => e.id !== id) }));
   }
 
+  function logBody({ date, weight, bodyFat }) {
+    setData((s) => {
+      const existing = s.bodyLog.find((e) => e.date === date);
+      const merged = {
+        date,
+        weight: weight != null ? weight : (existing?.weight ?? null),
+        bodyFat: bodyFat != null ? bodyFat : (existing?.bodyFat ?? null),
+      };
+      if (merged.weight == null && merged.bodyFat == null) return s;
+      const rest = s.bodyLog.filter((e) => e.date !== date);
+      const bodyLog = [...rest, merged].sort((a, b) => a.date.localeCompare(b.date));
+      return { ...s, bodyLog };
+    });
+  }
+
+  function removeBody(date) {
+    setData((s) => ({ ...s, bodyLog: s.bodyLog.filter((e) => e.date !== date) }));
+  }
+
   function selectPlanDay(day) {
     setPlanDay(day);
     setPlanAddDays([day]);
@@ -269,6 +288,9 @@ function App() {
           foods={data.foods}
           goals={data.goals}
           todayStr={todayStr}
+          bodyLog={data.bodyLog}
+          onLogBody={logBody}
+          onRemoveBody={removeBody}
         />
       )}
       {screen === 'mealPlan' && (
