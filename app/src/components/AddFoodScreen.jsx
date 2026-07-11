@@ -1,5 +1,8 @@
+import { caloriesFromMacros } from '../lib/calc';
+
 export default function AddFoodScreen({ newFood, onChange, onSave, onBack }) {
   const invalid = !newFood.name.trim();
+  const calories = caloriesFromMacros(newFood.protein, newFood.carbs, newFood.fat);
 
   return (
     <div className="screen">
@@ -30,22 +33,26 @@ export default function AddFoodScreen({ newFood, onChange, onSave, onBack }) {
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <div style={{ flex: 1 }}>
-            <div className="field-label" style={{ color: 'var(--accent)' }}>CALORIES</div>
-            <input type="number" value={newFood.calories} onChange={(e) => onChange('calories', e.target.value)} className="text-input text-input--form" />
-          </div>
-          <div style={{ flex: 1 }}>
             <div className="field-label" style={{ color: 'var(--protein)' }}>PROTEIN (G)</div>
-            <input type="number" value={newFood.protein} onChange={(e) => onChange('protein', e.target.value)} className="text-input text-input--form" />
+            <input type="number" inputMode="decimal" value={newFood.protein} onChange={(e) => onChange('protein', e.target.value)} className="text-input text-input--form" />
           </div>
-        </div>
-        <div style={{ display: 'flex', gap: 10 }}>
           <div style={{ flex: 1 }}>
             <div className="field-label" style={{ color: 'var(--carbs)' }}>CARBS (G)</div>
-            <input type="number" value={newFood.carbs} onChange={(e) => onChange('carbs', e.target.value)} className="text-input text-input--form" />
+            <input type="number" inputMode="decimal" value={newFood.carbs} onChange={(e) => onChange('carbs', e.target.value)} className="text-input text-input--form" />
           </div>
           <div style={{ flex: 1 }}>
             <div className="field-label" style={{ color: 'var(--fat)' }}>FAT (G)</div>
-            <input type="number" value={newFood.fat} onChange={(e) => onChange('fat', e.target.value)} className="text-input text-input--form" />
+            <input type="number" inputMode="decimal" value={newFood.fat} onChange={(e) => onChange('fat', e.target.value)} className="text-input text-input--form" />
+          </div>
+        </div>
+        <div>
+          <div className="field-label" style={{ color: 'var(--accent)' }}>CALORIES (AUTO)</div>
+          <div
+            className="text-input text-input--form"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text)', background: 'rgba(255,255,255,0.03)' }}
+          >
+            <span style={{ font: "700 16px 'Space Grotesk'", color: 'var(--accent)' }}>{calories}</span>
+            <span style={{ font: '500 12px Manrope', color: 'var(--text-45)' }}>= P×4 + C×4 + F×9 kcal</span>
           </div>
         </div>
         <button

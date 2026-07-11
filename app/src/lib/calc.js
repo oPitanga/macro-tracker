@@ -31,6 +31,14 @@ export function pct(value, goal) {
   return goal > 0 ? Math.min(100, Math.round((value / goal) * 100)) : 0;
 }
 
+/** Estimates calories from macros using the 4/4/9 kcal-per-gram (Atwater) factors. */
+export function caloriesFromMacros(protein, carbs, fat) {
+  const p = parseFloat(protein) || 0;
+  const c = parseFloat(carbs) || 0;
+  const f = parseFloat(fat) || 0;
+  return Math.round(p * 4 + c * 4 + f * 9);
+}
+
 export function entryMacros(entry, foods) {
   const food = foods.find(f => f.id === entry.foodId);
   if (!food) return { name: '?', cal: 0, protein: 0, carbs: 0, fat: 0, qtyLabel: '' };

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { loadState, saveState } from './lib/storage';
 import { initialState, DAYS, emptyMealPlan } from './lib/seed';
-import { todayDateStr, fullDateLabel, dayOfWeekKey } from './lib/calc';
+import { todayDateStr, fullDateLabel, dayOfWeekKey, caloriesFromMacros } from './lib/calc';
 import TodayScreen from './components/TodayScreen';
 import LogFoodScreen from './components/LogFoodScreen';
 import LibraryScreen from './components/LibraryScreen';
@@ -13,7 +13,7 @@ import MealPlanScreen from './components/MealPlanScreen';
 import BottomNav from './components/BottomNav';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
 
-const EMPTY_NEW_FOOD = { name: '', servingSize: 100, servingUnit: 'g', calories: '', protein: '', carbs: '', fat: '' };
+const EMPTY_NEW_FOOD = { name: '', servingSize: 100, servingUnit: 'g', protein: '', carbs: '', fat: '' };
 
 function App() {
   const [data, setData] = useState(() => ({ ...initialState(), ...(loadState() ?? {}) }));
@@ -182,6 +182,9 @@ function App() {
 
   function saveNewFood() {
     if (!newFood.name.trim()) return;
+    const protein = parseFloat(newFood.protein) || 0;
+    const carbs = parseFloat(newFood.carbs) || 0;
+    const fat = parseFloat(newFood.fat) || 0;
     setData((s) => ({
       ...s,
       foods: [...s.foods, {
@@ -189,10 +192,10 @@ function App() {
         name: newFood.name.trim(),
         servingSize: parseFloat(newFood.servingSize) || 100,
         servingUnit: newFood.servingUnit.trim() || 'g',
-        calories: parseFloat(newFood.calories) || 0,
-        protein: parseFloat(newFood.protein) || 0,
-        carbs: parseFloat(newFood.carbs) || 0,
-        fat: parseFloat(newFood.fat) || 0,
+        calories: caloriesFromMacros(protein, carbs, fat),
+        protein,
+        carbs,
+        fat,
       }],
       nextFoodId: s.nextFoodId + 1,
     }));
