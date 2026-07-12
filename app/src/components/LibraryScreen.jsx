@@ -1,6 +1,9 @@
-export default function LibraryScreen({ foods, libQuery, onLibQueryChange, onDeleteFood, onAddFood }) {
+export default function LibraryScreen({ foods, libQuery, onLibQueryChange, onDeleteFood, onEditFood, onAddFood }) {
   const q = libQuery.trim().toLowerCase();
-  const filtered = foods.filter((f) => f.name.toLowerCase().includes(q));
+  const filtered = foods
+    .filter((f) => f.name.toLowerCase().includes(q))
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="screen">
@@ -21,7 +24,17 @@ export default function LibraryScreen({ foods, libQuery, onLibQueryChange, onDel
               </div>
             </div>
             <button
+              onClick={() => onEditFood(f)}
+              aria-label={`Edit ${f.name}`}
+              style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.07)', color: 'var(--text-60)', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M14.5 5.5l4 4L8 20l-4 1 1-4L14.5 5.5z" stroke="var(--text-60)" strokeWidth="2" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <button
               onClick={() => onDeleteFood(f.id)}
+              aria-label={`Delete ${f.name}`}
               style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.07)', color: 'var(--text-60)', font: '600 15px Manrope', cursor: 'pointer', flexShrink: 0 }}
             >×</button>
           </div>

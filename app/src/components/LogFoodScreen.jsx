@@ -12,7 +12,10 @@ export default function LogFoodScreen({
   const filtered = foods
     .filter((f) => f.name.toLowerCase().includes(q))
     .slice()
-    .sort((a, b) => (isStarred(a.id) ? 0 : 1) - (isStarred(b.id) ? 0 : 1));
+    .sort((a, b) => {
+      const rank = (isStarred(a.id) ? 0 : 1) - (isStarred(b.id) ? 0 : 1);
+      return rank !== 0 ? rank : a.name.localeCompare(b.name);
+    });
 
   return (
     <div className="screen">

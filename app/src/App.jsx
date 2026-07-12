@@ -30,6 +30,7 @@ function App() {
   const [qtyDrafts, setQtyDrafts] = useState({});
   const [libQuery, setLibQuery] = useState('');
   const [newFood, setNewFood] = useState(EMPTY_NEW_FOOD);
+  const [editingFoodId, setEditingFoodId] = useState(null);
   const [goalsDraft, setGoalsDraft] = useState(data.goals);
   const [confirmDeleteHistory, setConfirmDeleteHistory] = useState(false);
 
@@ -48,7 +49,20 @@ function App() {
   function goLibrary() { setLibQuery(''); setScreen('library'); }
   function goHistory() { setScreen('history'); }
   function goGoals() { setGoalsDraft({ ...data.goals }); setScreen('goals'); }
-  function goAddFood() { setScreen('addFood'); }
+  function goAddFood() { setEditingFoodId(null); setNewFood(EMPTY_NEW_FOOD); setScreen('addFood'); }
+  function goEditFood(food) {
+    setEditingFoodId(food.id);
+    setNewFood({
+      name: food.name,
+      servingSize: String(food.servingSize),
+      servingUnit: food.servingUnit,
+      protein: String(food.protein),
+      carbs: String(food.carbs),
+      fat: String(food.fat),
+    });
+    setScreen('addFood');
+  }
+  function backFromFood() { setEditingFoodId(null); setNewFood(EMPTY_NEW_FOOD); goLibrary(); }
   function goMealPlan(day, meal) {
     const resolvedDay = day ?? todayDayKey;
     setPlanDay(resolvedDay);
@@ -185,21 +199,29 @@ function App() {
     const protein = parseFloat(newFood.protein) || 0;
     const carbs = parseFloat(newFood.carbs) || 0;
     const fat = parseFloat(newFood.fat) || 0;
-    setData((s) => ({
-      ...s,
-      foods: [...s.foods, {
-        id: s.nextFoodId,
-        name: newFood.name.trim(),
-        servingSize: parseFloat(newFood.servingSize) || 100,
-        servingUnit: newFood.servingUnit.trim() || 'g',
-        calories: caloriesFromMacros(protein, carbs, fat),
-        protein,
-        carbs,
-        fat,
-      }],
-      nextFoodId: s.nextFoodId + 1,
-    }));
+    const fields = {
+      name: newFood.name.trim(),
+      servingSize: parseFloat(newFood.servingSize) || 100,
+      servingUnit: newFood.servingUnit.trim() || 'g',
+      calories: caloriesFromMacros(protein, carbs, fat),
+      protein,
+      carbs,
+      fat,
+    };
+    if (editingFoodId != null) {
+      setData((s) => ({
+        ...s,
+        foods: s.foods.map((f) => (f.id === editingFoodId ? { ...f, ...fields } : f)),
+      }));
+    } else {
+      setData((s) => ({
+        ...s,
+        foods: [...s.foods, { id: s.nextFoodId, ...fields }],
+        nextFoodId: s.nextFoodId + 1,
+      }));
+    }
     setNewFood(EMPTY_NEW_FOOD);
+    setEditingFoodId(null);
     setScreen('library');
   }
 
@@ -264,15 +286,17 @@ function App() {
           libQuery={libQuery}
           onLibQueryChange={setLibQuery}
           onDeleteFood={deleteFood}
+          onEditFood={goEditFood}
           onAddFood={goAddFood}
         />
       )}
       {screen === 'addFood' && (
         <AddFoodScreen
           newFood={newFood}
+          editing={editingFoodId != null}
           onChange={updateNewFood}
           onSave={saveNewFood}
-          onBack={goLibrary}
+          onBack={backFromFood}
         />
       )}
       {screen === 'goals' && (

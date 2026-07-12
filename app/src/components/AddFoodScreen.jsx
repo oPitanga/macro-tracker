@@ -1,6 +1,6 @@
 import { caloriesFromMacros } from '../lib/calc';
 
-export default function AddFoodScreen({ newFood, onChange, onSave, onBack }) {
+export default function AddFoodScreen({ newFood, editing, onChange, onSave, onBack }) {
   const invalid = !newFood.name.trim();
   const calories = caloriesFromMacros(newFood.protein, newFood.carbs, newFood.fat);
 
@@ -8,7 +8,7 @@ export default function AddFoodScreen({ newFood, onChange, onSave, onBack }) {
     <div className="screen">
       <div className="back-head">
         <button className="icon-btn" onClick={onBack}>←</button>
-        <div className="back-title">New Food</div>
+        <div className="back-title">{editing ? 'Edit Food' : 'New Food'}</div>
       </div>
       <div className="screen-scroll" style={{ padding: '12px 20px 110px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
@@ -60,7 +60,7 @@ export default function AddFoodScreen({ newFood, onChange, onSave, onBack }) {
           disabled={invalid}
           className="btn-primary"
           style={{ marginTop: 6, background: invalid ? 'var(--accent-dim)' : 'var(--accent)' }}
-        >Save Food</button>
+        >{editing ? 'Save Changes' : 'Save Food'}</button>
       </div>
     </div>
   );
